@@ -28,13 +28,13 @@ public final class HIDTransport {
         public var description: String {
             switch self {
             case .notFound:
-                return "没有找到 ANTICATER 设备的配置接口（检查 USB 线是否连接）"
+                return "No se encontró la interfaz de configuración del dispositivo ANTICATER (comprueba si el cable USB está conectado)"
             case .openFailed(let r):
-                return String(format: "打开设备失败: IOReturn 0x%08X", UInt32(bitPattern: r))
+                return String(format: "Error al abrir el dispositivo: IOReturn 0x%08X", UInt32(bitPattern: r))
             case .writeFailed(let r):
-                return String(format: "发送报文失败: IOReturn 0x%08X", UInt32(bitPattern: r))
+                return String(format: "Error al enviar el mensaje: IOReturn 0x%08X", UInt32(bitPattern: r))
             case .timeout(let expected, let got):
-                return "等待设备应答超时：期望 \(expected) 条，只收到 \(got) 条"
+                return "Tiempo de espera agotado esperando la respuesta del dispositivo: se esperaban \(expected) mensajes y solo se recibieron \(got) mensajes"
             }
         }
 
@@ -123,7 +123,7 @@ public final class HIDTransport {
         defer { IOHIDManagerClose(manager, IOOptionBits(kIOHIDOptionsTypeNone)) }
 
         guard let devices = IOHIDManagerCopyDevices(manager) as? Set<IOHIDDevice> else {
-            EventLog.shared.log("发现", "CopyDevices 返回 nil，系统里没有匹配 VID/PID 的设备")
+            EventLog.shared.log("Descubrimiento", "CopyDevices devolvió nil: no hay ningún dispositivo en el sistema con VID/PID coincidente")
             return nil
         }
 
@@ -134,12 +134,12 @@ public final class HIDTransport {
             guard let vid = intProperty(device, kIOHIDVendorIDKey),
                   let pid = intProperty(device, kIOHIDProductIDKey) else { continue }
             guard hasConfigUsage(device) else { rejected += 1; continue }
-            EventLog.shared.log("发现", String(format: "选中配置接口 0x%04X:0x%04X", vid, pid))
+            EventLog.shared.log("Descubrimiento", String(format: "Interfaz de configuración seleccionada 0x%04X:0x%04X", vid, pid))
             return HIDTransport(device: device, vid: vid, pid: pid)
         }
-        EventLog.shared.log("发现",
-            "没有找到配置接口（VID/PID 命中但无 FF00:01 的接口 \(rejected) 个，"
-            + "系统 HID 设备共 \(devices.count) 个）")
+        EventLog.shared.log("Descubrimiento",
+            "No se encontró la interfaz de configuración (VID/PID coincidentes pero sin interfaz FF00:01: \(rejected); "
+            + "dispositivos HID del sistema en total: \(devices.count))")
         return nil
     }
 
@@ -174,7 +174,7 @@ public final class HIDTransport {
         IOHIDDeviceClose(device, IOOptionBits(kIOHIDOptionsTypeNone))
         scheduledRunLoop = nil
         // 未取走的报文数留个记录：非零说明上一次操作收多了或者读少了。
-        EventLog.shared.log("关闭", "设备已关闭（未取走的报文 \(inbox.count) 条）")
+        EventLog.shared.log("Cierre", "Dispositivo cerrado (\(inbox.count) mensajes sin recoger)")
         inbox.removeAll()
     }
 
@@ -184,9 +184,9 @@ public final class HIDTransport {
         // 注销回调（不在正确的线程上），也不能释放缓冲区（回调可能还会往里写），
         // 只好把这 65 字节泄漏掉换取内存安全，并留下记录。
         if opened {
-            assertionFailure("HIDTransport 被释放时仍处于打开状态，close() 漏调了")
+            assertionFailure("HIDTransport se liberó estando aún abierto; no se llamó a close()")
             FileHandle.standardError.write(
-                "warning: HIDTransport 未经 close() 即释放，输入缓冲区已泄漏以避免悬垂写入\n"
+                "warning: HIDTransport se liberó sin close(); el búfer de entrada se ha filtrado para evitar una escritura en memoria liberada\n"
                     .data(using: .utf8)!)
         } else {
             inputBuffer?.deallocate()
@@ -201,12 +201,12 @@ public final class HIDTransport {
         guard let inputBuffer else { return }
         let rc = IOHIDDeviceOpen(device, IOOptionBits(kIOHIDOptionsTypeNone))
         guard rc == kIOReturnSuccess else {
-            EventLog.shared.log("打开", String(format: "IOHIDDeviceOpen 失败 0x%08X",
+            EventLog.shared.log("Apertura", String(format: "IOHIDDeviceOpen falló 0x%08X",
                                                UInt32(bitPattern: rc)))
             throw Failure.openFailed(rc)
         }
         opened = true
-        EventLog.shared.log("打开", "设备已打开")
+        EventLog.shared.log("Apertura", "Dispositivo abierto")
 
         let context = Unmanaged.passUnretained(self).toOpaque()
         IOHIDDeviceRegisterInputReportCallback(
@@ -220,7 +220,7 @@ public final class HIDTransport {
                     FileHandle.standardError.write("← len=\(bytes.count)  \(dump)\n".data(using: .utf8)!)
                 }
                 // 收到的报文里有用户配置的键码，属于载荷，只在 verbose 下记。
-                EventLog.shared.logVerbose("收", "len=\(bytes.count)  \(EventLog.hex(bytes))")
+                EventLog.shared.logVerbose("Recepción", "len=\(bytes.count)  \(EventLog.hex(bytes))")
                 transport.inbox.append(bytes)
             },
             context)
@@ -234,7 +234,7 @@ public final class HIDTransport {
     /// 注意：原版程序发送时会把未用字节留成栈垃圾，设备显然不看它们；这里一律补零，
     /// 既更干净，也和抓到的写入命令（全零）一致。
     public func send(_ payload: [UInt8]) throws {
-        precondition(payload.count <= Self.payloadSize, "载荷超过 64 字节")
+        precondition(payload.count <= Self.payloadSize, "La carga supera los 64 bytes")
         // 这台设备要求缓冲区首字节就是 Report ID —— IOHIDDeviceSetReport 的 reportID 参数
         // 之外还得带上它，缓冲区总长 65。hidapi 在 macOS 上也是这么做的（仅当 ID 为 0 时才剥掉）。
         var buffer: [UInt8] = [Self.reportID]
@@ -245,12 +245,12 @@ public final class HIDTransport {
         guard rc == kIOReturnSuccess else {
             // 失败必须记，且要带上命令字节（payload 头两字节是命令码，不含用户数据），
             // 否则只知道「写失败了」，不知道失败在哪条命令上。
-            EventLog.shared.log("发", String(format: "SetReport 失败 0x%08X  命令 %@",
+            EventLog.shared.log("Envío", String(format: "SetReport falló 0x%08X, comando %@",
                                              UInt32(bitPattern: rc),
                                              EventLog.hex(Array(payload.prefix(2)))))
             throw Failure.writeFailed(rc)
         }
-        EventLog.shared.logVerbose("发", EventLog.hex(payload))
+        EventLog.shared.logVerbose("Envío", EventLog.hex(payload))
     }
 
     /// 收集接下来的 `count` 条输入报文，返回去掉 Report ID 的载荷。
@@ -266,7 +266,7 @@ public final class HIDTransport {
             inbox.removeAll()
             // 「期望几条、实到几条」是判断超时性质的关键：一条没收到多半是设备没响应，
             // 收到一半通常是设备还在吐但慢了。
-            EventLog.shared.log("收", "超时：期望 \(count) 条，实到 \(partial) 条")
+            EventLog.shared.log("Recepción", "Tiempo agotado: se esperaban \(count) mensajes y llegaron \(partial) mensajes")
             throw Failure.timeout(expected: count, got: partial)
         }
         let batch = Array(inbox.prefix(count))

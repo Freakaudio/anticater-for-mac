@@ -98,68 +98,68 @@ public enum Diagnostics {
         let devices = scanAll()
         var lines: [String] = []
 
-        lines.append("ANTICATER 连接诊断  ——  版本 \(AppVersion.string)")
+        lines.append("Diagnóstico de conexión ANTICATER — versión \(AppVersion.string)")
         // 提 issue 的入口就写在报告头部：用户拿到这段文本时往往已经离开了 app，
         // 地址跟着文本走，他们不必再回去翻菜单找链接。
         // 地址复用 UpdateChecker.repository，别在这里写第二份。
-        lines.append("提交问题：\(Diagnostics.issuesPage.absoluteString)")
-        lines.append("系统 \(ProcessInfo.processInfo.operatingSystemVersionString)")
+        lines.append("Informar de un problema: \(Diagnostics.issuesPage.absoluteString)")
+        lines.append("Sistema \(ProcessInfo.processInfo.operatingSystemVersionString)")
         #if arch(arm64)
-        lines.append("架构 arm64（Apple Silicon 原生）")
+        lines.append("Arquitectura arm64 (nativa para Apple Silicon)")
         #else
-        lines.append("架构 \(archName)（注意：发布版只有 arm64）")
+        lines.append("Arquitectura \(archName)(nota: la versión publicada solo es arm64)")
         #endif
         lines.append("")
 
         let candidates = devices.filter { $0.isSupportedID }
         let configInterfaces = candidates.filter { $0.hasConfigUsage }
 
-        lines.append("── 结论 ──")
+        lines.append("── Conclusión ──")
         if let chosen = configInterfaces.first {
-            lines.append(String(format: "✅ 找到配置通道：VID=0x%04X PID=0x%04X（%@）",
+            lines.append(String(format: "✅ Canal de configuración encontrado: VID=0x%04X PID=0x%04X (%@)",
                                 chosen.vendorID ?? 0, chosen.productID ?? 0,
-                                chosen.product ?? "无名称"))
-            lines.append("   如果 app 仍然连不上，多半是设备被别的程序占着——")
-            lines.append("   先退出原版 ANTICATER 软件，再试一次。")
+                                chosen.product ?? "Sin nombre"))
+            lines.append("   Si la app sigue sin conectar, lo más probable es que otro programa esté usando el dispositivo:")
+            lines.append("   Primero cierra el software original ANTICATER y vuelve a intentarlo.")
         } else if candidates.isEmpty {
-            lines.append("❌ 系统里没有任何 VID/PID 在支持列表内的 USB 设备。")
-            lines.append("   依次排查：")
-            lines.append("   1. 是不是用 2.4G 接收器或蓝牙连的？配置只能走 USB 数据线。")
-            lines.append("   2. 线是不是只能充电不能传数据？换一根确认能传数据的线。")
-            lines.append("   3. 换一个 USB 口，绕开扩展坞/Hub 直插机器。")
-            lines.append("   以上都排除了，说明这台硬件的 PID 不在列表里，")
-            lines.append("   请把下面的完整设备清单发给维护者。")
+            lines.append("❌ No hay ningún dispositivo USB en el sistema con VID/PID en la lista de soportados.")
+            lines.append("   Comprueba en este orden:")
+            lines.append("   1. ¿Está conectado con un receptor 2,4G o por Bluetooth? La configuración solo funciona por cable USB.")
+            lines.append("   2. ¿El cable solo carga y no transmite datos? Prueba con otro cable que transmita datos.")
+            lines.append("   3. Prueba otro puerto USB, conectado directamente al equipo, sin dock ni hub.")
+            lines.append("   Si todo lo anterior está descartado, el PID de este hardware no está en la lista,")
+            lines.append("   Envía al responsable del proyecto la lista completa de dispositivos que aparece abajo.")
         } else {
-            lines.append("⚠️ 找到了本设备，但它上面没有 0xFF00/0x01 配置集合。")
-            lines.append("   这台硬件的固件与已知型号不同，请把下面的完整清单发给维护者。")
+            lines.append("⚠️ Se encontró este dispositivo, pero no tiene el conjunto de configuración 0xFF00/0x01.")
+            lines.append("   El firmware de este hardware es distinto del de los modelos conocidos; envía al responsable del proyecto la lista completa que aparece abajo.")
         }
         lines.append("")
 
-        lines.append("── 本设备相关的接口（VID/PID 命中支持列表）──")
+        lines.append("── Interfaces relacionadas con este dispositivo (VID/PID en la lista de soportados) ──")
         if candidates.isEmpty {
-            lines.append("（无）")
+            lines.append("(Ninguno)")
         } else {
             for device in candidates { lines.append(describe(device)) }
         }
         lines.append("")
 
-        lines.append("── 系统里全部 HID 设备（共 \(devices.count) 个）──")
+        lines.append("── Todos los dispositivos HID del sistema (\(devices.count) en total) ──")
         for device in devices { lines.append(describe(device)) }
         lines.append("")
 
         // 事件日志放在最后：设备清单是「现在什么样」，日志是「刚才发生了什么」，
         // 前者通常一眼就能定性，翻到日志的多半是前者没答案的疑难情况。
-        lines.append("── 本次运行的事件日志 ──")
+        lines.append("── Registro de eventos de esta ejecución ──")
         // 必须讲清「开关只对之后发生的事生效」：用户很容易以为打开开关就能把
         // 已经记下的条目补全，结果拿到一份没有报文的日志，白折腾一轮。
         if !EventLog.shared.verbose {
-            lines.append("（未开启详细模式，因此不含报文内容。需要的话：先在诊断窗口打开"
-                       + "「记录详细日志」，然后重新复现一次问题，再回来拷贝——"
-                       + "开关只对打开之后发生的操作生效，不会补全上面已有的记录。）")
+            lines.append("(Modo detallado desactivado, por eso no incluye el contenido de los mensajes. Si lo necesitas: primero abre en la ventana de diagnóstico "
+                       + "«Registrar registro detallado», vuelve a reproducir el problema y después vuelve a copiar; "
+                       + "el interruptor solo afecta a las operaciones posteriores a su activación y no completará los registros anteriores.)")
         }
         lines.append(contentsOf: EventLog.shared.rendered())
         lines.append("")
-        lines.append("── 把以上内容贴到 issue 里 ──")
+        lines.append("── Pega el contenido anterior en el issue ──")
         lines.append(Diagnostics.issuesPage.absoluteString)
 
         return lines.joined(separator: "\n")
@@ -173,15 +173,15 @@ public enum Diagnostics {
             .joined(separator: " ")
         let marker = device.isConfigInterface ? "→" : " "
         return "\(marker) \(ids)  [\(device.transport ?? "?")]  "
-            + "\(device.manufacturer ?? "") \(device.product ?? "无名称")".trimmingCharacters(in: .whitespaces)
-            + "\n      usage pairs: \(pairs.isEmpty ? "（无）" : pairs)"
+            + "\(device.manufacturer ?? "") \(device.product ?? "Sin nombre")".trimmingCharacters(in: .whitespaces)
+            + "\n      usage pairs: \(pairs.isEmpty ? "(Ninguno)" : pairs)"
     }
 
     private static var archName: String {
         #if arch(x86_64)
         return "x86_64"
         #else
-        return "未知"
+        return "Desconocido"
         #endif
     }
 }

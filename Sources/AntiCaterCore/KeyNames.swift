@@ -10,7 +10,7 @@ public enum KeyNames {
         switch type {
         case .keyboard: return keyboardName(code)
         case .media:    return mediaName(code)
-        case .mouse:    return String(format: "鼠标 0x%02X", code)
+        case .mouse:    return String(format: "Ratón 0x%02X", code)
         case nil:       return String(format: "0x%02X", code)
         }
     }
@@ -27,7 +27,7 @@ public enum KeyNames {
         case 0x3A...0x45:  // F1-F12
             return "F\(code - 0x3A + 1)"
         case 0x59...0x61:  // 小键盘 1-9
-            return "小键盘 \(code - 0x59 + 1)"
+            return "Teclado numérico \(code - 0x59 + 1)"
         default:
             return String(format: "0x%02X", code)
         }
@@ -42,15 +42,15 @@ public enum KeyNames {
         0x49: "Insert", 0x4A: "Home", 0x4B: "Page Up", 0x4C: "Delete",
         0x4D: "End", 0x4E: "Page Down",
         0x4F: "→", 0x50: "←", 0x51: "↓", 0x52: "↑",
-        0x53: "Num Lock", 0x54: "小键盘 /", 0x55: "小键盘 *",
-        0x56: "小键盘 -", 0x57: "小键盘 +", 0x58: "小键盘 Enter",
-        0x62: "小键盘 0", 0x63: "小键盘 .",
-        0x64: "><", 0x65: "菜单键 ▤",
+        0x53: "Num Lock", 0x54: "Teclado numérico /", 0x55: "Teclado numérico *",
+        0x56: "Teclado numérico -", 0x57: "Teclado numérico +", 0x58: "Teclado numérico Enter",
+        0x62: "Teclado numérico 0", 0x63: "Teclado numérico .",
+        0x64: "><", 0x65: "Tecla de menú ▤",
         0xE0: "Left Ctrl", 0xE1: "Left Shift", 0xE2: "Left Alt", 0xE3: "Left Cmd",
         0xE4: "Right Ctrl", 0xE5: "Right Shift", 0xE6: "Right Alt", 0xE7: "Right Cmd",
         // 厂商自定义的组合键前缀码
         0xF1: "Ctrl+", 0xF2: "Shift+", 0xF3: "Alt+", 0xF4: "Win/⌘+",
-        0xF5: "右 Ctrl+", 0xF6: "右 Shift+", 0xF7: "右 Alt+", 0xF8: "右 Win/⌘+",
+        0xF5: "Ctrl derecho +", 0xF6: "Mayús derecha +", 0xF7: "Alt derecho +", 0xF8: "Win/⌘ derecho +",
     ]
 
     /// 窄处显示用的短名：小键盘只写字符本身（1 而不是「小键盘 1」），修饰键只留 Ctrl / Shift 之类。
@@ -68,7 +68,7 @@ public enum KeyNames {
         case 0x28:        return "⏎"
         case 0x2A:        return "⌫"
         case 0x2B:        return "⇥"
-        case 0x2C:        return "空格"
+        case 0x2C:        return "Espacio"
         case 0xE0, 0xE4:  return "Ctrl"
         case 0xE1, 0xE5:  return "Shift"
         case 0xE2, 0xE6:  return "Alt"
@@ -77,10 +77,10 @@ public enum KeyNames {
         case 0xF2:        return "Shift"
         case 0xF3:        return "Alt"
         case 0xF4:        return "⌘"
-        case 0xF5:        return "右Ctrl"
-        case 0xF6:        return "右Shift"
-        case 0xF7:        return "右Alt"
-        case 0xF8:        return "右⌘"
+        case 0xF5:        return "Ctrl der."
+        case 0xF6:        return "Mayús der."
+        case 0xF7:        return "Alt der."
+        case 0xF8:        return "⌘ der."
         default:          return keyboardName(code)
         }
     }
@@ -88,18 +88,18 @@ public enum KeyNames {
     // MARK: - 多媒体 (Consumer Page 0x0C)
 
     public static func mediaName(_ code: UInt8) -> String {
-        mediaTable[code] ?? String(format: "多媒体 0x%02X", code)
+        mediaTable[code] ?? String(format: "Multimedia 0x%02X", code)
     }
 
     private static let mediaTable: [UInt8: String] = [
-        0xB5: "下一曲", 0xB6: "上一曲", 0xB7: "停止", 0xCD: "播放/暂停",
-        0xE2: "静音", 0xE9: "音量+", 0xEA: "音量-",
+        0xB5: "Pista siguiente", 0xB6: "Pista anterior", 0xB7: "Detener", 0xCD: "Reproducir/Pausar",
+        0xE2: "Silencio", 0xE9: "Volumen +", 0xEA: "Volumen -",
     ]
 
     /// 供界面选择用的常用动作清单
     public static let mediaChoices: [(code: UInt8, name: String)] = [
-        (0xCD, "播放/暂停"), (0xB5, "下一曲"), (0xB6, "上一曲"),
-        (0xE9, "音量+"), (0xEA, "音量-"), (0xE2, "静音"), (0xB7, "停止"),
+        (0xCD, "Reproducir/Pausar"), (0xB5, "Pista siguiente"), (0xB6, "Pista anterior"),
+        (0xE9, "Volumen +"), (0xEA, "Volumen -"), (0xE2, "Silencio"), (0xB7, "Detener"),
     ]
 
     // MARK: - 界面用的键盘清单
@@ -126,16 +126,16 @@ public enum KeyNames {
 
     /// 按分组排好的可选键盘码，界面下拉直接用
     public static let keyboardGroups: [Group] = [
-        Group(title: "字母", items: range(0x04...0x1D)),
-        Group(title: "数字", items: list(Array(0x1E...0x26) + [0x27])),
-        Group(title: "功能键", items: range(0x3A...0x45)),
-        Group(title: "控制", items: list([0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x39,
+        Group(title: "Letras", items: range(0x04...0x1D)),
+        Group(title: "Números", items: list(Array(0x1E...0x26) + [0x27])),
+        Group(title: "Teclas de función", items: range(0x3A...0x45)),
+        Group(title: "Control", items: list([0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x39,
                                           0x46, 0x47, 0x48, 0x65])),
-        Group(title: "符号", items: list([0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x64])),
-        Group(title: "编辑与方向", items: list([0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52])),
-        Group(title: "小键盘", items: list(Array(0x53...0x58) + Array(0x59...0x63))),
-        Group(title: "修饰键", items: list([0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7])),
-        Group(title: "组合前缀", items: list([0xF1, 0xF2, 0xF3, 0xF4,
+        Group(title: "Símbolos", items: list([0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x64])),
+        Group(title: "Edición y dirección", items: list([0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52])),
+        Group(title: "Teclado numérico", items: list(Array(0x53...0x58) + Array(0x59...0x63))),
+        Group(title: "Teclas modificadoras", items: list([0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7])),
+        Group(title: "Prefijos de combinación", items: list([0xF1, 0xF2, 0xF3, 0xF4,
                                             0xF5, 0xF6, 0xF7, 0xF8])),
     ]
 

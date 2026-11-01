@@ -27,9 +27,9 @@ public enum Proto {
 
         public var label: String {
             switch self {
-            case .keyboard: return "键盘"
-            case .media:    return "多媒体"
-            case .mouse:    return "鼠标"
+            case .keyboard: return "Teclado"
+            case .media:    return "Multimedia"
+            case .mouse:    return "Ratón"
             }
         }
     }
@@ -194,37 +194,37 @@ public enum Proto {
     }
 
     public static let procreatePresets: [Preset] = [
-        Preset("快速菜单",            [0x2C]),                       // Space
-        Preset("调试命令",            [0x35]),                       // `
-        Preset("画笔工具",            [0x05]),                       // B
-        Preset("打开颜色面板",         [0x06]),                       // C
-        Preset("橡皮擦工具",           [0x3E]),                       // F5
-        Preset("打开图层面板",         [0x0F]),                       // L
-        Preset("进入选区模式",         [0x16]),                       // S
-        Preset("进入变换模式",         [0x19]),                       // V
-        Preset("先前/当前颜色切换",     [0x1B]),                       // X
-        Preset("取色（Alt）",         [Combo.altCode]),              // Alt
-        Preset("取色 M（iOS 17）",    [0x10]),                       // M
-        Preset("清空当前图层",         [Combo.winCode, 0x2A]),        // ⌘Delete
-        Preset("全屏切换",            [Combo.winCode, 0x27]),        // ⌘0
-        Preset("透视参考线开关",       [Combo.winCode, 0x33]),        // ⌘;
-        Preset("画笔缩小 1%",         [Combo.winCode, 0x2F]),        // ⌘[
-        Preset("画笔放大 1%",         [Combo.winCode, 0x30]),        // ⌘]
-        Preset("画笔缩小 5%",         [0x2F]),                       // [
-        Preset("画笔放大 5%",         [0x30]),                       // ]
-        Preset("画笔缩小 10%",        [Combo.shiftCode, 0x2F]),      // ⇧[
-        Preset("画笔放大 10%",        [Combo.shiftCode, 0x30]),      // ⇧]
-        Preset("拷贝全部",            [Combo.winCode, 0x04]),        // ⌘A
-        Preset("色彩平衡调整",         [Combo.winCode, 0x05]),        // ⌘B
-        Preset("拷贝",               [Combo.winCode, 0x06]),        // ⌘C
-        Preset("取消选区",            [Combo.winCode, 0x07]),        // ⌘D
-        Preset("复制选区",            [Combo.winCode, 0x0D]),        // ⌘J
-        Preset("打开操作菜单",         [Combo.winCode, 0x0E]),        // ⌘K
-        Preset("HSB 调整",           [Combo.winCode, 0x18]),        // ⌘U
-        Preset("粘贴",               [Combo.winCode, 0x19]),        // ⌘V
-        Preset("剪切",               [Combo.winCode, 0x1B]),        // ⌘X
-        Preset("撤销",               [Combo.winCode, 0x1D]),        // ⌘Z
-        Preset("重做",               [Combo.shiftCode, Combo.winCode, 0x1D]), // ⇧⌘Z
+        Preset("Menú rápido",            [0x2C]),                       // Space
+        Preset("Comando de depuración",            [0x35]),                       // `
+        Preset("Herramienta de pincel",            [0x05]),                       // B
+        Preset("Abrir panel de color",         [0x06]),                       // C
+        Preset("Herramienta de borrador",           [0x3E]),                       // F5
+        Preset("Abrir panel de capas",         [0x0F]),                       // L
+        Preset("Entrar en modo selección",         [0x16]),                       // S
+        Preset("Entrar en modo transformación",         [0x19]),                       // V
+        Preset("Cambiar entre color anterior y actual",     [0x1B]),                       // X
+        Preset("Tomar color (Alt)",         [Combo.altCode]),              // Alt
+        Preset("Tomar color M (iOS 17)",    [0x10]),                       // M
+        Preset("Vaciar capa actual",         [Combo.winCode, 0x2A]),        // ⌘Delete
+        Preset("Cambiar a pantalla completa",            [Combo.winCode, 0x27]),        // ⌘0
+        Preset("Activar/desactivar guías de perspectiva",       [Combo.winCode, 0x33]),        // ⌘;
+        Preset("Reducir pincel 1%",         [Combo.winCode, 0x2F]),        // ⌘[
+        Preset("Ampliar pincel 1%",         [Combo.winCode, 0x30]),        // ⌘]
+        Preset("Reducir pincel 5%",         [0x2F]),                       // [
+        Preset("Ampliar pincel 5%",         [0x30]),                       // ]
+        Preset("Reducir pincel 10%",        [Combo.shiftCode, 0x2F]),      // ⇧[
+        Preset("Ampliar pincel 10%",        [Combo.shiftCode, 0x30]),      // ⇧]
+        Preset("Copiar todo",            [Combo.winCode, 0x04]),        // ⌘A
+        Preset("Ajuste de equilibrio de color",         [Combo.winCode, 0x05]),        // ⌘B
+        Preset("Copiar",               [Combo.winCode, 0x06]),        // ⌘C
+        Preset("Anular selección",            [Combo.winCode, 0x07]),        // ⌘D
+        Preset("Copiar selección",            [Combo.winCode, 0x0D]),        // ⌘J
+        Preset("Abrir menú de acciones",         [Combo.winCode, 0x0E]),        // ⌘K
+        Preset("Ajuste HSB",           [Combo.winCode, 0x18]),        // ⌘U
+        Preset("Pegar",               [Combo.winCode, 0x19]),        // ⌘V
+        Preset("Cortar",               [Combo.winCode, 0x1B]),        // ⌘X
+        Preset("Deshacer",               [Combo.winCode, 0x1D]),        // ⌘Z
+        Preset("Rehacer",               [Combo.shiftCode, Combo.winCode, 0x1D]), // ⇧⌘Z
     ]
 
     public static func binding(index: UInt8, layer: UInt8, preset: Preset) -> Binding {
@@ -324,22 +324,22 @@ public enum Proto {
     ///   的排列反推的，「点赞 = 05」则是排除法剩下的。
     /// 独立复核认为结论都对，但上面后两类**是推断，不是实证**。
     public static let mouseActions: [MouseAction] = [
-        MouseAction("鼠标左键", slot1: 0x01),
-        MouseAction("鼠标中键", slot1: 0x04),
-        MouseAction("鼠标右键", slot1: 0x02),
-        MouseAction("鼠标滚轮+", slot4: 0x01),
-        MouseAction("鼠标滚轮-", slot4: 0xFF),
-        MouseAction("Ctrl + 鼠标向上",  slot0: Combo.ctrlCode,  slot4: 0x01),
-        MouseAction("Ctrl + 鼠标向下",  slot0: Combo.ctrlCode,  slot4: 0xFF),
-        MouseAction("Shift + 鼠标向上", slot0: Combo.shiftCode, slot4: 0x01),
-        MouseAction("Shift + 鼠标向下", slot0: Combo.shiftCode, slot4: 0xFF),
-        MouseAction("Alt + 鼠标向上",   slot0: Combo.altCode,   slot4: 0x01),
-        MouseAction("Alt + 鼠标向下",   slot0: Combo.altCode,   slot4: 0xFF),
-        MouseAction("点赞",     flag: 0x04, slot0: 0x05),
-        MouseAction("向左划屏", flag: 0x04, slot0: 0x01),
-        MouseAction("向右划屏", flag: 0x04, slot0: 0x02),
-        MouseAction("向上划屏", flag: 0x04, slot0: 0x03),
-        MouseAction("向下划屏", flag: 0x04, slot0: 0x04),
+        MouseAction("Botón izquierdo del ratón", slot1: 0x01),
+        MouseAction("Botón central del ratón", slot1: 0x04),
+        MouseAction("Botón derecho del ratón", slot1: 0x02),
+        MouseAction("Rueda del ratón +", slot4: 0x01),
+        MouseAction("Rueda del ratón -", slot4: 0xFF),
+        MouseAction("Ctrl + rueda del ratón hacia arriba",  slot0: Combo.ctrlCode,  slot4: 0x01),
+        MouseAction("Ctrl + rueda del ratón hacia abajo",  slot0: Combo.ctrlCode,  slot4: 0xFF),
+        MouseAction("Mayús + rueda del ratón hacia arriba", slot0: Combo.shiftCode, slot4: 0x01),
+        MouseAction("Mayús + rueda del ratón hacia abajo", slot0: Combo.shiftCode, slot4: 0xFF),
+        MouseAction("Alt + rueda del ratón hacia arriba",   slot0: Combo.altCode,   slot4: 0x01),
+        MouseAction("Alt + rueda del ratón hacia abajo",   slot0: Combo.altCode,   slot4: 0xFF),
+        MouseAction("Me gusta",     flag: 0x04, slot0: 0x05),
+        MouseAction("Deslizar hacia la izquierda", flag: 0x04, slot0: 0x01),
+        MouseAction("Deslizar hacia la derecha", flag: 0x04, slot0: 0x02),
+        MouseAction("Deslizar hacia arriba", flag: 0x04, slot0: 0x03),
+        MouseAction("Deslizar hacia abajo", flag: 0x04, slot0: 0x04),
     ]
 
     public static func mouseAction(from binding: Binding) -> MouseAction? {
@@ -370,8 +370,8 @@ public enum Proto {
     /// 但这台机器上 1 是白光、2 是绿光，行走效果实际落在 3 和 4 上，5 是流光。
     /// 大概是说明书照抄了同系列另一款的固件。
     public static let lightModes: [(mode: UInt8, name: String)] = [
-        (0, "关闭灯光"), (1, "白光"), (2, "绿光"),
-        (3, "顺时针行走"), (4, "逆时针行走"), (5, "流光"),
+        (0, "Apagar luz"), (1, "Luz blanca"), (2, "Luz verde"),
+        (3, "Giro en sentido horario"), (4, "Giro en sentido antihorario"), (5, "Luz fluida"),
     ]
 
     /// 灯效写入命令，共三包，必须依次发出。
@@ -485,11 +485,11 @@ public enum PhysicalKey: UInt8, CaseIterable {
 
     public var label: String {
         switch self {
-        case .rotateLeft:      return "左旋转"
-        case .press:           return "按压旋钮"
-        case .rotateRight:     return "右旋转"
-        case .holdRotateLeft:  return "长按左旋转"
-        case .holdRotateRight: return "长按右旋转"
+        case .rotateLeft:      return "Girar izquierda"
+        case .press:           return "Pulsar"
+        case .rotateRight:     return "Girar derecha"
+        case .holdRotateLeft:  return "Mantener y girar izquierda"
+        case .holdRotateRight: return "Mantener y girar derecha"
         }
     }
 
@@ -505,11 +505,11 @@ public enum PhysicalKey: UInt8, CaseIterable {
 
     public var hint: String {
         switch self {
-        case .rotateLeft:      return "逆时针拧一格"
-        case .press:           return "按下旋钮"
-        case .rotateRight:     return "顺时针拧一格"
-        case .holdRotateLeft:  return "按住旋钮再逆时针拧"
-        case .holdRotateRight: return "按住旋钮再顺时针拧"
+        case .rotateLeft:      return "Girar un paso en sentido antihorario"
+        case .press:           return "Pulsar el mando"
+        case .rotateRight:     return "Girar un paso en sentido horario"
+        case .holdRotateLeft:  return "Mantener pulsado y girar en sentido antihorario"
+        case .holdRotateRight: return "Mantener pulsado y girar en sentido horario"
         }
     }
 }

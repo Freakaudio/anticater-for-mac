@@ -16,7 +16,7 @@ public enum UpdateChecker {
     public static var autoCheckEnabled: Bool {
         get {
             // 没写过这个键时默认开启，所以要区分「没设过」和「设成了 false」。
-            UserDefaults.standard.object(forKey: autoCheckDefaultsKey) as? Bool ?? true
+            UserDefaults.standard.object(forKey: autoCheckDefaultsKey) as? Bool ?? false
         }
         set { UserDefaults.standard.set(newValue, forKey: autoCheckDefaultsKey) }
     }
@@ -32,8 +32,8 @@ public enum UpdateChecker {
 
         public var description: String {
             switch self {
-            case .network(let detail): return "连不上 GitHub：\(detail)"
-            case .badResponse:         return "GitHub 返回的内容看不懂"
+            case .network(let detail): return "No se puede conectar con GitHub: \(detail)"
+            case .badResponse:         return "GitHub devolvió un contenido que no se entiende"
             }
         }
     }

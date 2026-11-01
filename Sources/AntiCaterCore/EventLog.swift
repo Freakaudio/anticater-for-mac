@@ -82,7 +82,7 @@ public final class EventLog {
     /// 渲染成可粘贴的纯文本。
     public func rendered() -> [String] {
         let items = entries()
-        guard !items.isEmpty else { return ["（本次运行还没有记录到事件）"] }
+        guard !items.isEmpty else { return ["(En esta ejecución todavía no se ha registrado ningún evento)"] }
 
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss.SSS"
@@ -91,7 +91,7 @@ public final class EventLog {
             "\(formatter.string(from: $0.time))  [\($0.category)] \($0.message)"
         }
         if wrapped {
-            lines.insert("（只保留最近 \(Self.capacity) 条，更早的已被覆盖）", at: 0)
+            lines.insert("(Solo se conservan los \(Self.capacity) más recientes; los anteriores se han sobrescrito)", at: 0)
         }
         return lines
     }
@@ -99,6 +99,6 @@ public final class EventLog {
     /// 把字节转成 hex，超长时截断——单条 64 字节全打出来会把日志挤爆。
     public static func hex(_ bytes: [UInt8], limit: Int = 16) -> String {
         let shown = bytes.prefix(limit).map { String(format: "%02X", $0) }.joined(separator: " ")
-        return bytes.count > limit ? "\(shown) …(\(bytes.count) 字节)" : shown
+        return bytes.count > limit ? "\(shown) …(\(bytes.count) bytes)" : shown
     }
 }

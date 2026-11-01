@@ -51,7 +51,7 @@ public final class Session: DeviceSession {
         let reply = try transport.receive(count: 1).first ?? []
         // 应答的前四字节是 FB 00 01 <固件版本>，不含用户数据，可以直接记：
         // 用户报协议异常时，固件版本是第一个要问的东西。
-        EventLog.shared.log("会话", "握手应答 \(EventLog.hex(Array(reply.prefix(4))))")
+        EventLog.shared.log("Sesión", "Respuesta de handshake \(EventLog.hex(Array(reply.prefix(4))))")
         return reply
     }
 
@@ -92,9 +92,9 @@ public final class Session: DeviceSession {
     public func write(_ binding: Proto.Binding) throws {
         // 记下标、层、类型和长度，不记键码本身——键码是用户数据，走 verbose。
         // 这几项已经够把「写入回读不一致」定位到具体是哪一次写入出的问题。
-        EventLog.shared.log("写入",
-            "第 \(binding.layer) 层 [\(String(format: "%02d", Int(binding.index)))] "
-            + "类型 \(binding.type?.label ?? String(format: "0x%02X", binding.rawType)) "
+        EventLog.shared.log("Escritura",
+            "Conjunto \(binding.layer) [\(String(format: "%02d", Int(binding.index)))] "
+            + "Tipo \(binding.type?.label ?? String(format: "0x%02X", binding.rawType)) "
             + "len=\(binding.dataLength)")
         try transport.send(Proto.writeCommand(binding))
         try transport.send(Proto.commitCommand())
