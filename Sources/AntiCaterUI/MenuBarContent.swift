@@ -36,7 +36,7 @@ public struct MenuBarContent: View {
 
         Divider()
 
-        Menu("灯效") {
+        Menu("Efecto de luz") {
             ForEach(Proto.lightModes, id: \.mode) { item in
                 Button {
                     model.setLight(mode: item.mode)
@@ -51,14 +51,14 @@ public struct MenuBarContent: View {
         }
         .disabled(!model.connection.isConnected || !model.lightAvailable)
 
-        Button("打开主窗口") {
+        Button("Abrir ventana principal") {
             NSApp.activate(ignoringOtherApps: true)
             openWindow(id: "main")
         }
 
         Divider()
 
-        Toggle("开机时自动启动", isOn: Binding(
+        Toggle("Iniciar automáticamente al arrancar", isOn: Binding(
             get: { launchAtLogin },
             set: { on in
                 do {
@@ -68,7 +68,7 @@ public struct MenuBarContent: View {
                     // 注册接口不报错不等于真的开了：被系统拦下时状态会停在原处，
                     // 这时得说实话，不能默默装成已开启。
                     launchError = (launchAtLogin == on)
-                        ? nil : "系统没有接受这次设置，请到「系统设置 → 通用 → 登录项」里手动放行。"
+                        ? nil : "El sistema no aceptó este ajuste; autorízalo manualmente en «Ajustes del Sistema → General → Ítems de inicio de sesión»."
                 } catch {
                     launchAtLogin = LaunchAtLogin.isEnabled
                     needsApproval = LaunchAtLogin.needsApproval
@@ -77,12 +77,12 @@ public struct MenuBarContent: View {
             }))
 
         if needsApproval {
-            Button("需要在「系统设置 → 登录项」里放行…") {
+            Button("Hay que autorizarlo en «Ajustes del Sistema → General → Ítems de inicio de sesión»…") {
                 LaunchAtLogin.openLoginItemsSettings()
             }
         }
         if let launchError {
-            Text("设置自启失败：\(launchError)")
+            Text("Error al activar el inicio automático: \(launchError)")
         }
 
         Divider()
@@ -92,20 +92,20 @@ public struct MenuBarContent: View {
         //
         // 只留一个入口指向诊断窗口：拷贝和详细日志开关都在窗口里，
         // 菜单里再摆一份就成了两套名字相近、行为又不完全一样的动作。
-        Button("诊断信息…") {
+        Button("Información de diagnóstico…") {
             NSApp.activate(ignoringOtherApps: true)
             openWindow(id: "diagnostics")
         }
 
-        Button("反馈问题…") { NSWorkspace.shared.open(Diagnostics.issuesPage) }
+        Button("Informar de un problema…") { NSWorkspace.shared.open(Diagnostics.issuesPage) }
 
         Divider()
 
         // 版本号露在界面上，方便和 GitHub 上的 Release 对得起来。
-        Text("ANTICATER 原生版 \(AppVersion.string)")
+        Text("ANTICATER versión nativa \(AppVersion.string)")
 
         if let newVersion {
-            Button("有新版本 \(newVersion)，去下载…") {
+            Button("Hay una versión nueva \(newVersion); ir a descargarla…") {
                 NSWorkspace.shared.open(UpdateChecker.releasesPage)
             }
         }
@@ -113,18 +113,18 @@ public struct MenuBarContent: View {
             Text(updateStatus)
         }
 
-        Button("检查更新") {
+        Button("Comprobar actualizaciones") {
             Task { await runUpdateCheck(announceNoUpdate: true) }
         }
 
-        Toggle("启动时检查更新", isOn: Binding(
+        Toggle("Comprobar actualizaciones al iniciar", isOn: Binding(
             get: { autoCheckUpdates },
             set: { on in
                 autoCheckUpdates = on
                 UpdateChecker.autoCheckEnabled = on
             }))
 
-        Button("退出 ANTICATER") { NSApp.terminate(nil) }
+        Button("Salir de ANTICATER") { NSApp.terminate(nil) }
             .keyboardShortcut("q")
     }
 
@@ -132,14 +132,14 @@ public struct MenuBarContent: View {
     ///   哪怕结果是「已经是最新」或者没联网；自动检查则一律静默。
     @MainActor
     private func runUpdateCheck(announceNoUpdate: Bool) async {
-        if announceNoUpdate { updateStatus = "正在检查…" }
+        if announceNoUpdate { updateStatus = "Comprobando…" }
         switch await UpdateChecker.check() {
         case .success(.available(let version)):
             newVersion = version
             updateStatus = nil
         case .success(.upToDate):
             newVersion = nil
-            updateStatus = announceNoUpdate ? "已经是最新版本" : nil
+            updateStatus = announceNoUpdate ? "Ya tienes la versión más reciente" : nil
         case .failure(let error):
             newVersion = nil
             updateStatus = announceNoUpdate ? "\(error)" : nil
@@ -148,10 +148,10 @@ public struct MenuBarContent: View {
 
     private var linkSummary: String {
         switch (model.links.usb, model.links.bluetooth) {
-        case (true, true):   return "旋钮已连接：数据线 + 蓝牙"
-        case (true, false):  return "旋钮已连接：数据线"
-        case (false, true):  return "旋钮已连接：蓝牙（读写配置都需插线）"
-        case (false, false): return "未检测到旋钮"
+        case (true, true):   return "Mando conectado: cable de datos + Bluetooth"
+        case (true, false):  return "Mando conectado: cable de datos"
+        case (false, true):  return "Mando conectado: Bluetooth (para leer y escribir la configuración hay que conectar el cable)"
+        case (false, false): return "No se detectó ningún mando"
         }
     }
 }

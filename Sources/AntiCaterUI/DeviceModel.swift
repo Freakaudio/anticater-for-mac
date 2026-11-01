@@ -87,7 +87,7 @@ public final class DeviceModel: ObservableObject {
         links = status
 
         if hadUSB, !status.usb {
-            invalidateSession(reason: "数据线已拔出。改动还留在编辑区，插回来就能继续写。")
+            invalidateSession(reason: "Cable de datos desconectado. Los cambios siguen en el editor; al volver a conectarlo podrás seguir escribiendo.")
         } else if !hadUSB, status.usb, !connection.isConnected, !busy {
             // 插回来自动接上。有未写入的改动就只更新基线，**不动 draft**，
             // 免得把用户编到一半的东西冲掉。
@@ -133,7 +133,7 @@ public final class DeviceModel: ObservableObject {
     func clearAll(in layer: UInt8) {
         guard let list = draft[layer] else { return }
         draft[layer] = list.map { Proto.cleared(index: $0.index, layer: layer) }
-        message = "已在编辑区清空第 \(layer) 套的全部操作，点「写入旋钮」才会生效"
+        message = "Se han vaciado en el editor todas las acciones del conjunto \(layer); solo tendrán efecto al pulsar «Escribir en el mando»"
     }
 
     /// 某个键相对读回来的值是否有改动
@@ -169,7 +169,7 @@ public final class DeviceModel: ObservableObject {
             guard let self else { return }
             switch result {
             case .success:
-                self.message = "灯效已切换为「"
+                self.message = "Efecto de luz cambiado a «"
                     + (Proto.lightModes.first { $0.mode == mode }?.name ?? "\(mode)") + "」"
             case .failure(let error):
                 // 写可能是写到一半失败的，光把界面变量改回去不够——
@@ -179,7 +179,7 @@ public final class DeviceModel: ObservableObject {
                     self.worker.run { try session.writeLight(mode: previous, palette: palette) }
                         completion: { _ in }
                 }
-                self.errorMessage = "切换灯效失败：" + Self.friendly(error, links: self.links)
+                self.errorMessage = "Error al cambiar el efecto de luz: " + Self.friendly(error, links: self.links)
             }
         }
     }
@@ -206,7 +206,7 @@ public final class DeviceModel: ObservableObject {
         do {
             return try session.readLight()
         } catch {
-            EventLog.shared.log("会话", "读灯效失败，按该固件不支持处理：\(error)")
+            EventLog.shared.log("Sesión", "Error al leer el efecto de luz; se tratará como firmware sin soporte: \(error)")
             return nil
         }
     }
@@ -215,8 +215,8 @@ public final class DeviceModel: ObservableObject {
     ///   拔插线自动重连时用得上：连接断过不代表用户想丢掉改到一半的东西。
     public func connect(preservingDraft: Bool = false, silentOnFailure: Bool = false) {
         guard !busy else { return }
-        EventLog.shared.log("界面",
-            "开始连接（\(silentOnFailure ? "插拔自动重连" : "用户主动")）")
+        EventLog.shared.log("Interfaz",
+            "Iniciando conexión (\(silentOnFailure ? "reconexión automática al conectar" : "manual"))")
         // 重连前先把旧的关掉，否则设备会被同一个进程开两次，旧句柄也没人注销回调。
         invalidateSession(reason: nil)
         busy = true
@@ -252,17 +252,17 @@ public final class DeviceModel: ObservableObject {
                                              firmware: snapshot.firmware)
                 if preservingDraft {
                     self.saved = snapshot.layers
-                    self.message = "旋钮已重新连上，未写入的改动还在"
+                    self.message = "El mando se ha vuelto a conectar; los cambios sin escribir siguen guardados"
                 } else {
                     self.apply(layers: snapshot.layers)
-                    self.message = "已读取旋钮上的全部设置"
+                    self.message = "Se han leído todos los ajustes del mando"
                 }
                 self.apply(light: snapshot.light)
             case .failure(let error):
                 // session 已经在 worker 里关掉了，这里只要把界面状态摆正。
                 self.session = nil
                 self.connection = .disconnected
-                EventLog.shared.log("界面", "连接失败：\(error)")
+                EventLog.shared.log("Interfaz", "Error de conexión: \(error)")
                 // 插线触发的自动重连不该弹窗——用户没点任何东西，凭空跳个报错
                 // 只会吓人。安静退回未连接，工具栏里还有「连接旋钮」可以手动来。
                 guard !silentOnFailure else { break }
@@ -272,8 +272,8 @@ public final class DeviceModel: ObservableObject {
                 // 每天都要关一次。降级成会自己消失的浮层提示，说一次就够。
                 if Self.isNotFound(error) {
                     self.message = self.links.bluetooth
-                        ? "蓝牙链路上没有配置通道，插上 USB 数据线才能读写配置"
-                        : "没找到旋钮，请插上 USB 数据线"
+                        ? "Por Bluetooth no hay canal de configuración; conecta el cable USB de datos para leer y escribir la configuración"
+                        : "No se encontró el mando; conecta el cable USB de datos"
                 } else {
                     self.errorMessage = Self.friendly(error, links: self.links)
                 }
@@ -292,7 +292,7 @@ public final class DeviceModel: ObservableObject {
             case .success(let (layers, light)):
                 self.apply(layers: layers)
                 self.apply(light: light)
-                self.message = "已重新读取"
+                self.message = "Lectura actualizada"
             case .failure(let error):
                 self.dropSessionIfStale(error)
                 self.errorMessage = Self.friendly(error, links: self.links)
@@ -338,13 +338,13 @@ public final class DeviceModel: ObservableObject {
 
                 if rejected.isEmpty {
                     self.apply(layers: layers)
-                    EventLog.shared.log("界面", "写入 \(total) 项，回读校验全部通过")
-                    self.message = "已写入 \(total) 项，回读校验通过"
+                    EventLog.shared.log("Interfaz", "Se escribieron \(total) elementos y la comprobación por relectura fue correcta")
+                    self.message = "Se escribieron \(total) elementos; la comprobación por relectura fue correcta"
                 } else {
                     // 这是最需要日志的一类问题：没报错，但配置没进去。
                     // 记下标即可定位到上面 Session.write 那几条，对照着看发了什么。
-                    EventLog.shared.log("界面",
-                        "写入 \(total) 项，其中 \(rejected.count) 项回读不一致："
+                    EventLog.shared.log("Interfaz",
+                        "Se escribieron \(total) elementos, de los cuales \(rejected.count) no coinciden en la relectura:"
                         + rejected.map { "[\(String(format: "%02d", Int($0.index)))]" }
                             .joined(separator: " "))
                     // 只把基线换成设备的真实状态，**保留 draft**：没写进去的那几项
@@ -353,21 +353,21 @@ public final class DeviceModel: ObservableObject {
                     let names = rejected
                         .compactMap { PhysicalKey(rawValue: $0.index)?.label }
                         .joined(separator: "、")
-                    self.errorMessage = "有 \(rejected.count) 项没有写进旋钮：\(names)。"
-                        + "你的编辑内容还在，确认数据线插好后再点一次「写入旋钮」。"
+                    self.errorMessage = "Hay \(rejected.count) elementos que no se escribieron en el mando: \(names)."
+                        + "Tu edición sigue guardada; comprueba que el cable de datos esté conectado y pulsa otra vez «Escribir en el mando»."
                 }
             case .failure(let error):
                 // 句柄失效的话必须断开重连，否则重试多少次都是同一个错。
                 // draft 一律保留，改动不会因为掉线而丢。
                 self.dropSessionIfStale(error)
-                self.errorMessage = "写入失败：" + Self.friendly(error, links: self.links)
+                self.errorMessage = "Error al escribir: " + Self.friendly(error, links: self.links)
             }
         }
     }
 
     func discardChanges() {
         draft = saved
-        message = "已放弃未保存的改动"
+        message = "Cambios sin guardar descartados"
     }
 
     /// 错误是否意味着设备句柄已作废；是的话顺手把 session 丢掉。
@@ -404,15 +404,15 @@ public final class DeviceModel: ObservableObject {
     static func friendly(_ error: Error, links: LinkStatus = LinkStatus()) -> String {
         let text = "\(error)"
         if text.contains("E00002C5") || text.lowercased().contains("exclusive") {
-            return "旋钮被别的程序占着（多半是原版 ANTICATER 软件还开着）。"
-                 + "退出它之后再点「连接旋钮」。"
+            return "El mando está en uso por otro programa (probablemente el software original ANTICATER siga abierto)."
+                 + "Ciérralo y después pulsa «Conectar mando»."
         }
         // 0xE00002C2 kIOReturnBadArgument / 0xE00002C0 kIOReturnNoDevice /
         // 0xE00002CD kIOReturnNotOpen —— 都是「句柄已经作废」，实测就是中途拔了线。
         if text.contains("E00002C2") || text.contains("E00002C0")
             || text.contains("E00002CD") || text.contains("E00002D9") {
-            return "和旋钮的连接已经断了（中途拔过数据线）。已自动断开，"
-                 + "插回线就会自动接上，你的改动还在编辑区。"
+            return "La conexión con el mando se interrumpió (se desconectó el cable de datos). Se desconectó automáticamente; "
+                 + "Al volver a conectar el cable se conectará automáticamente y tus cambios seguirán en el editor."
         }
         if Self.isNotFound(error) {
             // 蓝牙在线时不能说「没找到旋钮」——界面上蓝牙徽标正亮着，
@@ -421,12 +421,12 @@ public final class DeviceModel: ObservableObject {
             // 读配置和写配置走的是同一条通道，一起失效。说成只有写受限，
             // 用户会合理地期待至少能读出来。
             if links.bluetooth {
-                return "旋钮正通过蓝牙连着，但配置读不到——蓝牙这条链路上没有配置通道，"
-                     + "读取和修改都只能走 USB 数据线。插上线即可，无需手动点连接。"
+                return "El mando está conectado por Bluetooth, pero no se puede leer su configuración: por Bluetooth no hay canal de configuración; "
+                     + "La lectura y la modificación solo funcionan por cable USB de datos. Basta con conectar el cable, sin pulsar conectar manualmente."
             }
-            return "没找到旋钮。配置通道只存在于 USB 数据线上——只连蓝牙或 2.4G 接收器"
-                 + "都读不到也改不了。另外有些线只能充电、不能传数据，可以换一根试试。"
-                 + "确认线没问题还是连不上的话，点「查看诊断信息…」把结果发给维护者。"
+            return "No se encontró el mando. El canal de configuración solo existe por cable USB; solo con Bluetooth o un receptor 2,4G"
+                 + "no se puede leer ni modificar. Además, algunos cables solo cargan y no transmiten datos; prueba con otro."
+                 + "Si el cable está bien y sigue sin conectar, pulsa «Ver información de diagnóstico…» y envía el resultado al responsable del proyecto."
         }
         return text
     }

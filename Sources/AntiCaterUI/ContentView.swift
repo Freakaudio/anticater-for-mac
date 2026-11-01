@@ -26,29 +26,29 @@ public struct ContentView: View {
         .onAppear { model.connect(silentOnFailure: true) }
         .onChange(of: model.errorMessage) { showError = $0 != nil }
         .animation(.easeOut(duration: 0.18), value: model.message)
-        .confirmationDialog("把 \(model.changeCount) 项改动写入旋钮？",
+        .confirmationDialog("¿Escribir \(model.changeCount) cambios en el mando?",
                             isPresented: $confirmWrite, titleVisibility: .visible) {
-            Button("写入", role: .destructive) { model.writeChanges() }
-            Button("取消", role: .cancel) {}
+            Button("Escribir", role: .destructive) { model.writeChanges() }
+            Button("Cancelar", role: .cancel) {}
         } message: {
-            Text("会覆盖旋钮上对应操作的当前设置，写完自动回读校验。")
+            Text("Sobrescribirá la configuración actual de las acciones correspondientes del mando; al terminar se volverá a leer para comprobarla.")
         }
-        .confirmationDialog("清空全部五个旋钮操作？",
+        .confirmationDialog("¿Vaciar las cinco acciones del mando?",
                             isPresented: $confirmClearAll, titleVisibility: .visible) {
-            Button("清空", role: .destructive) { model.clearAll(in: model.layer) }
-            Button("取消", role: .cancel) {}
+            Button("Vaciar", role: .destructive) { model.clearAll(in: model.layer) }
+            Button("Cancelar", role: .cancel) {}
         } message: {
-            Text("只改编辑区，点「写入旋钮」之前都可以撤回。")
+            Text("Solo cambia la zona de edición; se puede deshacer hasta pulsar «Escribir en el mando».")
         }
-        .alert("出错了", isPresented: $showError) {
+        .alert("Se produjo un error", isPresented: $showError) {
             // 连不上时远程排障全靠这个。放在报错弹窗里而不是只在菜单深处，
             // 因为需要它的时刻就是这一刻。
             // 打开窗口而不是直接拷贝：让用户先看清要发出去的是什么再决定拷不拷。
-            Button("查看诊断信息…") {
+            Button("Ver información de diagnóstico…") {
                 NSApp.activate(ignoringOtherApps: true)
                 openWindow(id: "diagnostics")
             }
-            Button("好") { model.errorMessage = nil }
+            Button("Aceptar") { model.errorMessage = nil }
         } message: {
             Text(model.errorMessage ?? "")
         }
@@ -73,14 +73,14 @@ public struct ContentView: View {
 
             List(selection: Binding(get: { model.selected },
                                     set: { model.selected = $0 ?? model.selected })) {
-                Section("旋钮操作") {
+                Section("Acciones del mando") {
                     ForEach(PhysicalKey.displayOrder, id: \.self) { key in
                         row(key).tag(key)
                     }
                 }
 
-                Section("灯光") {
-                    Picker("灯效", selection: Binding(get: { model.lightMode },
+                Section("Luz") {
+                    Picker("Efecto de luz", selection: Binding(get: { model.lightMode },
                                                     set: { model.setLight(mode: $0) })) {
                         ForEach(Proto.lightModes, id: \.mode) { item in
                             Text(item.name).tag(item.mode)
@@ -91,7 +91,7 @@ public struct ContentView: View {
                     // 连上了却读不到灯效，说明这台固件不认这组命令。说一句，
                     // 否则用户只会看到一个点不动的选择器，不知道是坏了还是没连上。
                     if model.connection.isConnected, !model.lightAvailable {
-                        Text("这台旋钮的固件不支持灯效设置，按键配置不受影响。")
+                        Text("El firmware de este mando no admite el ajuste del efecto de luz; la configuración de teclas no se ve afectada.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -101,28 +101,28 @@ public struct ContentView: View {
 
             Divider()
             Button(role: .destructive) { confirmClearAll = true } label: {
-                Label("清空全部配置", systemImage: "eraser")
+                Label("Vaciar toda la configuración", systemImage: "eraser")
                     .frame(maxWidth: .infinity)
             }
             .controlSize(.large)
             .disabled(!model.connection.isConnected)
             .padding(10)
-            .help("把五个旋钮操作全部清空。会先弹窗确认，写入前还能撤回。")
+            .help("Vacía las cinco acciones del mando. Primero se pedirá confirmación y se puede deshacer antes de escribir.")
         }
     }
 
     /// 两条链路的在线状态。挂在旋钮图下方——工具栏太挤，放这儿正好接着旋钮读。
     private var linkBar: some View {
         HStack(spacing: 10) {
-            linkBadge("数据线", systemImage: "cable.connector", on: model.links.usb,
+            linkBadge("Cable de datos", systemImage: "cable.connector", on: model.links.usb,
                       help: model.links.usb
-                          ? "USB 线已插好，可以改配置" : "USB 线没插——改配置必须插线")
-            linkBadge("蓝牙", systemImage: "dot.radiowaves.left.and.right",
+                          ? "Cable USB conectado; ya se puede cambiar la configuración" : "Cable USB no conectado; para cambiar la configuración hay que conectarlo")
+            linkBadge("Bluetooth", systemImage: "dot.radiowaves.left.and.right",
                       on: model.links.bluetooth,
                       help: model.links.bluetooth
-                          ? "旋钮已通过蓝牙连上这台电脑。蓝牙链路上没有配置通道，"
-                            + "读写配置都要插 USB 线"
-                          : "蓝牙未连接")
+                          ? "El mando está conectado a este equipo por Bluetooth. Por Bluetooth no hay canal de configuración; "
+                            + "para leer y escribir la configuración hay que conectar el cable USB"
+                          : "Bluetooth no conectado")
         }
         .frame(maxWidth: .infinity)
     }
@@ -168,7 +168,7 @@ public struct ContentView: View {
             }
         }
         .padding(.vertical, 3)
-        .help(binding.map(Summary.full) ?? "未设置")
+        .help(binding.map(Summary.full) ?? "Sin asignar")
     }
 
     // MARK: - 工具栏
@@ -182,7 +182,7 @@ public struct ContentView: View {
                 Button {
                     model.connection.isConnected ? model.reload() : model.connect()
                 } label: {
-                    Label(model.connection.isConnected ? "重新读取" : "连接旋钮",
+                    Label(model.connection.isConnected ? "Volver a leer" : "Conectar mando",
                           systemImage: model.connection.isConnected
                               ? "arrow.clockwise" : "cable.connector")
                 }
@@ -194,14 +194,14 @@ public struct ContentView: View {
             .help(connectionDetail)
 
             if model.hasChanges {
-                Button("放弃") { model.discardChanges() }
-                    .help("退回到旋钮上现在的设置")
+                Button("Descartar") { model.discardChanges() }
+                    .help("Volver a la configuración actual del mando")
             }
 
             Button {
                 confirmWrite = true
             } label: {
-                Text(model.hasChanges ? "写入旋钮（\(model.changeCount)）" : "写入旋钮")
+                Text(model.hasChanges ? "Escribir en el mando (\(model.changeCount))" : "Escribir en el mando")
             }
             .keyboardShortcut("s")
             .buttonStyle(.borderedProminent)
@@ -211,12 +211,12 @@ public struct ContentView: View {
 
     private var connectionDetail: String {
         if case .connected(let name, let serial, let firmware) = model.connection {
-            return "\(name)\n序列号 \(serial)\n固件 \(firmware)"
+            return "\(name)\nNúmero de serie \(serial)\nFirmware \(firmware)"
         }
         if model.links.bluetooth {
-            return "蓝牙已连接，但配置通道只在 USB 上\n插上数据线会自动连接"
+            return "Bluetooth conectado, pero el canal de configuración solo está por USB\nAl conectar el cable de datos se conectará automáticamente"
         }
-        return "用 USB 数据线把旋钮接到电脑上，会自动连接"
+        return "Conecta el mando al equipo con el cable USB de datos; se conectará automáticamente"
     }
 
     // MARK: - 瞬时提示

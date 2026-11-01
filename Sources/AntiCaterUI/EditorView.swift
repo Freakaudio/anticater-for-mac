@@ -7,10 +7,10 @@ enum EditorMode: String, CaseIterable, Hashable {
 
     var label: String {
         switch self {
-        case .key:   return "单个按键"
-        case .combo: return "组合键"
-        case .media: return "多媒体"
-        case .mouse: return "鼠标/划屏"
+        case .key:   return "Tecla individual"
+        case .combo: return "Combinación de teclas"
+        case .media: return "Multimedia"
+        case .mouse: return "Ratón / Deslizamiento"
         case .procreate: return "Procreate"
         }
     }
@@ -48,7 +48,7 @@ struct EditorView: View {
                 overview(binding, mode: mode)
 
                 Section {
-                    Picker("类型", selection: Binding(
+                    Picker("Tipo", selection: Binding(
                         get: { mode },
                         set: { browsing = (slotID, $0) })
                     ) {
@@ -91,15 +91,15 @@ struct EditorView: View {
             if model.links.bluetooth {
                 // 蓝牙亮着的时候说「未连接旋钮」会和徽标打架。
                 // 这里的实情是：连着，但这条链路上没有配置通道。
-                Text("蓝牙已连接，但读不到配置").font(.title3)
-                Text("蓝牙链路上没有配置通道，读取和修改都只能走 USB 数据线。\n"
-                   + "插上线会自动连接。")
+                Text("Bluetooth conectado, pero no se puede leer la configuración").font(.title3)
+                Text("Por Bluetooth no hay canal de configuración; la lectura y la modificación solo funcionan por cable USB de datos.\n"
+                   + "Al conectar el cable se conectará automáticamente.")
                     .multilineTextAlignment(.center)
                     .font(.callout)
                     .foregroundStyle(.secondary)
             } else {
-                Text("未连接旋钮").font(.title3)
-                Text("用 USB 数据线把旋钮接到电脑，会自动连接。")
+                Text("Mando no conectado").font(.title3)
+                Text("Conecta el mando al equipo con el cable USB de datos; se conectará automáticamente.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -117,18 +117,18 @@ struct EditorView: View {
     private func bannerText(_ mode: EditorMode, _ binding: Proto.Binding) -> String {
         // 改过就说改过。之前这里无论如何都写「尚未改动」——在 Procreate 页选完一条
         // 预设后仍然显示「尚未改动」，跟侧栏的橙点直接打架。
-        if dirty { return "已改动，点右上角「写入旋钮」才会生效" }
+        if dirty { return "Modificado; solo tendrá efecto al pulsar «Escribir en el mando» arriba a la derecha" }
         if mode == .inferred(from: binding) { return " " }
-        return "正在用「\(mode.label)」的方式编辑，尚未改动"
+        return "Editando con «\(mode.label)», sin cambios todavía"
     }
 
     @ViewBuilder
     private func overview(_ binding: Proto.Binding, mode: EditorMode) -> some View {
         Section {
-            LabeledContent("触发方式", value: model.selected.hint)
+            LabeledContent("Forma de activación", value: model.selected.hint)
             // 标题得跟着状态走：改过之后这里显示的已经是编辑区的值，
             // 再叫「旋钮上的当前功能」就是在骗人。
-            LabeledContent(dirty ? "改完的功能（待写入）" : "旋钮上的当前功能") {
+            LabeledContent(dirty ? "Función modificada (pendiente de escribir)" : "Función actual del mando") {
                 Text(Summary.full(binding))
                     .font(.system(size: 13, weight: .medium))
                     .textSelection(.enabled)
@@ -177,7 +177,7 @@ struct EditorView: View {
 
     private func mediaSection(_ binding: Proto.Binding) -> some View {
         let current = binding.type == .media ? binding.steps.first?.code : nil
-        return Section("媒体动作") {
+        return Section("Acciones multimedia") {
             ForEach(KeyNames.mediaChoices, id: \.code) { choice in
                 choiceRow(choice.name, selected: current == choice.code) {
                     model.update(Proto.Binding(index: binding.index, layer: binding.layer,
@@ -199,14 +199,14 @@ struct EditorView: View {
             Toggle("Control", isOn: comboField(binding, combo, \.ctrl))
             Toggle("Shift",   isOn: comboField(binding, combo, \.shift))
             Toggle("Option",  isOn: comboField(binding, combo, \.alt))
-            Toggle("Command（Windows 上是 Win）", isOn: comboField(binding, combo, \.win))
+            Toggle("Command (en Windows es Win)", isOn: comboField(binding, combo, \.win))
         } header: {
-            Text("修饰键")
+            Text("Teclas modificadoras")
         }
 
         Section {
-            Picker("配合的按键", selection: comboField(binding, combo, \.code)) {
-                ForEach(KeyNames.keyboardGroups.filter { $0.title != "组合前缀" }) { group in
+            Picker("Tecla combinada", selection: comboField(binding, combo, \.code)) {
+                ForEach(KeyNames.keyboardGroups.filter { $0.title != "Prefijos de combinación" }) { group in
                     Section(group.title) {
                         ForEach(group.items) { item in
                             Text(item.name).tag(item.code)
@@ -215,8 +215,8 @@ struct EditorView: View {
                 }
             }
         } footer: {
-            Text(existing == nil ? "至少勾一个修饰键，改动才会生效。"
-                                 : "旋钮会依次发出 \(comboPreview(combo))。")
+            Text(existing == nil ? "Marca al menos una tecla modificadora para que el cambio tenga efecto."
+                                 : "El mando enviará en orden \(comboPreview(combo)).")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -252,8 +252,8 @@ struct EditorView: View {
 
         Section {
             if count == 0 {
-                Text(isKeyboard ? "还没有按键，点下面的「添加按键」开始。"
-                                : "这个操作目前不是键盘功能。点「添加按键」会把它改成键盘。")
+                Text(isKeyboard ? "Todavía no hay teclas; pulsa «Añadir tecla» abajo para empezar."
+                                : "Esta acción no es actualmente una función de teclado. Al pulsar «Añadir tecla» se convertirá en teclado.")
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(0..<count, id: \.self) { i in
@@ -264,19 +264,19 @@ struct EditorView: View {
             Button {
                 addStep(binding)
             } label: {
-                Label("添加按键", systemImage: "plus")
+                Label("Añadir tecla", systemImage: "plus")
             }
             .disabled(count >= Proto.macroSlots)
         } header: {
             HStack {
-                Text("按键序列")
+                Text("Secuencia de teclas")
                 Spacer()
                 Text("\(count) / \(Proto.macroSlots)")
                     .foregroundStyle(.secondary)
                     .font(.caption.monospacedDigit())
             }
         } footer: {
-            Text("按上到下依次发出，延时是发出该键之前先等待的毫秒数。")
+            Text("Se envían de arriba abajo en orden; el retardo es el tiempo de espera en milisegundos antes de enviar esa tecla.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -317,7 +317,7 @@ struct EditorView: View {
                 Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
             }
             .buttonStyle(.borderless)
-            .help("删掉这一步")
+            .help("Eliminar este paso")
         }
     }
 
@@ -379,7 +379,7 @@ struct EditorView: View {
     private func procreateSection(_ binding: Proto.Binding) -> some View {
         let current = Proto.preset(from: binding)
 
-        Section("Procreate 快捷键") {
+        Section("Atajos de Procreate") {
             ForEach(Proto.procreatePresets) { preset in
                 choiceRow(preset.name, detail: presetShortcut(preset),
                           selected: current == preset) {
@@ -407,7 +407,7 @@ struct EditorView: View {
                 model.update(Proto.cleared(index: binding.index, layer: binding.layer))
                 browsing = nil
             } label: {
-                Label("清空这个操作", systemImage: "eraser")
+                Label("Vaciar esta acción", systemImage: "eraser")
             }
             .disabled(binding.type == .keyboard && binding.dataLength == 0)
         }
@@ -419,20 +419,20 @@ struct EditorView: View {
     private func mouseSection(_ binding: Proto.Binding) -> some View {
         let current = Proto.mouseAction(from: binding)
 
-        Section("鼠标按键与滚轮") {
+        Section("Botones y rueda del ratón") {
             mousePicker(binding, current: current, flag: 0x01)
         }
 
         Section {
             mousePicker(binding, current: current, flag: 0x04)
         } header: {
-            Text("划屏与手势")
+            Text("Deslizamientos y gestos")
         } footer: {
             if binding.type == .mouse && current == nil {
-                Text("旋钮上现在存的是一个没见过的鼠标动作，原始数据 "
+                Text("El mando tiene guardada una acción de ratón desconocida; datos originales "
                      + binding.steps.prefix(5)
                         .map { String(format: "%02X", $0.code) }.joined(separator: " ")
-                     + "。选一项会把它覆盖掉。")
+                     + ". Si eliges una opción, se sobrescribirá.")
                 .font(.caption).foregroundStyle(.orange)
             }
         }

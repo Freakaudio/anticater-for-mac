@@ -28,7 +28,7 @@ public struct DiagnosticsView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            Toggle("记录详细日志", isOn: Binding(
+            Toggle("Registrar registro detallado", isOn: Binding(
                 get: { verbose },
                 set: { on in
                     verbose = on
@@ -37,22 +37,22 @@ public struct DiagnosticsView: View {
                     // 否则用户刚打开开关却看到界面说没开，会以为没生效。
                     refresh()
                 }))
-            .help("额外记录收发报文的十六进制内容。会包含你配置的按键与宏，用完请关掉。")
+            .help("Registra además el contenido hexadecimal de los mensajes enviados y recibidos. Incluirá las teclas y macros que configures; desactívalo cuando termines.")
 
             // 开关只对打开之后发生的操作生效，已有记录不会被补全。
             // 不写出来的话，用户会开完开关直接拷贝，拿到一份没有报文的日志。
             if verbose {
-                Text("现在去复现一次问题，报文才会被记下（含按键配置）")
+                Text("Reproduce ahora el problema para que los mensajes queden registrados (incluye la configuración de teclas)")
                     .font(.caption)
                     .foregroundStyle(.orange)
             }
 
             Spacer()
 
-            Button("刷新", action: refresh)
-            Button(copied ? "已拷贝" : "拷贝全部", action: copy)
+            Button("Actualizar", action: refresh)
+            Button(copied ? "Copiado" : "Copiar todo", action: copy)
                 .disabled(copied)
-            Button("反馈问题…") { NSWorkspace.shared.open(Diagnostics.issuesPage) }
+            Button("Informar de un problema…") { NSWorkspace.shared.open(Diagnostics.issuesPage) }
                 .keyboardShortcut(.defaultAction)
         }
         .padding(12)
