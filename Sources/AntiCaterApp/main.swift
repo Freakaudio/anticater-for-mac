@@ -17,7 +17,7 @@ struct AntiCaterApp: App {
 
         // 诊断单独开一个窗口，不塞进主窗口的标签页里：它是排障时才用一次的东西，
         // 放在主界面里会占用户每天都要看的注意力。
-        Window("诊断信息", id: "diagnostics") {
+        Window("Información de diagnóstico", id: "diagnostics") {
             DiagnosticsView()
         }
         .windowResizability(.contentMinSize)
